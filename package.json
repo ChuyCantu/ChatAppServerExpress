@@ -1,0 +1,39 @@
+{
+  "name": "chatappserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "chat",
+    "sockets"
+  ],
+  "author": "Jesus Cantu",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "connect-sqlite3": "^0.9.13",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "ejs": "^3.1.8",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "express-validator": "^6.14.2",
+    "http-errors": "^2.0.0",
+    "mkdirp": "^1.0.4",
+    "morgan": "^1.10.0",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.7.3",
+    "pluralize": "^8.0.0",
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^6.21.3",
+    "socket.io": "^4.5.1",
+    "sqlite3": "^5.0.10"
+  }
+}
