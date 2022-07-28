@@ -5,6 +5,10 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const { db, testDatabaseConnection } = require("./services/db");
+
+//+ Database connection
+testDatabaseConnection(db);
 
 //+ Express Instance
 const app = express();
