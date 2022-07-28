@@ -2,6 +2,7 @@ const { Router } = require("express");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const crypto = require("crypto");
+const { isAuthenticated } = require("../middleware/auth.middleware")
 const { User } = require("../services/db");
 
 passport.use(new LocalStrategy(async function verify(username, password, cb) {
@@ -32,7 +33,7 @@ passport.deserializeUser(function(user, cb) {
 
 const router = Router();
 
-router.get("/test", (req, res) => {
+router.get("/test", [isAuthenticated], (req, res) => {
     if (req.user) {
         res.json({
             msg: "User authenticated",
