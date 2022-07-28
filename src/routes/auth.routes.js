@@ -6,7 +6,8 @@ const { User } = require("../services/db");
 
 passport.use(new LocalStrategy(async function verify(username, password, cb) {
     const user = await User.findOne({ where: { username: username }});
-    if (!user) return cb(new Error("Invalid username or password"));
+    if (!user) return cb(null, false, { message: "Incorrect username or password" });
+        //return cb(new Error("Invalid username or password1"), false);
 
     crypto.pbkdf2(password, user.salt, 310000, 32, "sha256", function(err, hashedPassword) {
         if (err) return cb(err);
@@ -31,24 +32,41 @@ passport.deserializeUser(function(user, cb) {
 
 const router = Router();
 
-router.post("/test", (req, res) => {
-    if (req.user) 
-        res.send("User authenticated");
-    else
-        res.send("Access denied");
+router.get("/test", (req, res) => {
+    if (req.user) {
+        res.json({
+            msg: "User authenticated",
+            username: req.user.username
+        });
+    }
+    else {
+        res.json({
+            msg: "Access denied"
+        });
+    }
 });
 
 router.post("/login", 
-    passport.authenticate("local", {
-        successRedirect: "/",
-        failureRedirect: "/login"
-    }));
+    passport.authenticate("local", { failureMessage: false }), (req, res) => {
+        if (req.user) {
+            res.json({
+                msg: "Log in",
+                username: req.user.username
+            });
+        }
+        else {
+            res.status(401).json({
+                msg: "Incorrect username or password"
+            });
+        }
+    }
+);
 
-router.post("/logout", function(req, res, next) {
+router.delete("/logout", function(req, res, next) {
     req.logout(function(err) {
         if (err) return next(err);
 
-        res.send({
+        res.json({
             msg: "Log out successful"
         });
     });
@@ -73,7 +91,7 @@ router.post("/signup", async function(req, res, next) {
 
         req.login(user, function(err) {
             if (err) return next(err);
-            res.send({
+            res.json({
                 msg: "Sing up and log in successful",
                 username: user.username
             });
