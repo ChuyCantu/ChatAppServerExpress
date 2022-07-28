@@ -5,14 +5,14 @@ const { User } = require("../services/db");
 const login = (req, res) => {
     if (req.user) {
         res.json({
-            status: "OK",
-            msg: "Success",
+            ok: true,
+            msg: "Successful Login",
             username: req.user.username
         });
     }
     else {
         res.status(401).json({
-            status: "Unauthorized",
+            ok: false,
             msg: "Incorrect username or password"
         });
     }
@@ -23,8 +23,8 @@ const logout = (req, res) => {
         if (err) return next(err);
 
         res.json({
-            status: "OK",
-            msg: "Success"
+            ok: true,
+            msg: "Successful Logout"
         });
     });
 };
@@ -49,8 +49,8 @@ const signup = async (req, res) => {
         req.login(user, function(err) {
             if (err) return next(err);
             res.json({
-                status: "OK",
-                msg: "Success",
+                ok: true,
+                msg: "Successful signup",
                 username: user.username
             });
         });
@@ -60,14 +60,14 @@ const signup = async (req, res) => {
 const verifyAuthentication = (req, res) => {
     if (req.user) {
         res.json({
-            status: "OK",
-            msg: "Success",
+            ok: true,
+            msg: "User authenticated",
             username: req.user.username
         });
     }
     else {
         res.json({
-            status: "Unauthorized",
+            ok: false,
             msg: "Access denied"
         });
     }

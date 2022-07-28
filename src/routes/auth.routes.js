@@ -1,9 +1,10 @@
 const { Router } = require("express");
+const { check } = require('express-validator');
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const crypto = require("crypto");
 
-const { isAuthenticated } = require("../middleware/auth.middleware");
+const { isAuthenticated, validateFields } = require("../middleware/auth.middleware");
 const { User } = require("../services/db");
 const { login, logout, signup, verifyAuthentication } = require("../controllers/auth.controller");
 
@@ -36,9 +37,29 @@ passport.deserializeUser(function(user, cb) {
 //+ Routes
 const router = Router();
 
-router.get("/verify", [isAuthenticated], verifyAuthentication);
-router.post("/login", passport.authenticate("local", { failureMessage: false }), login);
-router.delete("/logout", logout);
-router.post("/signup", signup);
+// Validate Token
+router.get("/", [isAuthenticated], verifyAuthentication);
+
+// Login
+router.post("/", [
+    check("username", "The username must be 3 or more characters")
+        .not().isEmpty().isLength({ min: 3 }),
+    check("password", "The password must be 6 to 16 characters")
+        .not().isEmpty().isLength({ min: 6, max: 16 }),
+    validateFields,
+    passport.authenticate("local", { failureMessage: false })
+], login);
+
+// Logout
+router.delete("/", logout);
+
+// Signup
+router.post("/new", [
+    check("username", "The username must be 3 or more characters")
+        .not().isEmpty().isLength({ min: 3 }),
+    check("password", "The password must be 6 to 16 characters")
+        .not().isEmpty().isLength({ min: 6, max: 16 }).matches(/^[-@.!\/#&+\w\s]*$/),
+    validateFields,
+], signup);
 
 module.exports = router;
