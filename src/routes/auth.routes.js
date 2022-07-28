@@ -6,7 +6,7 @@ const crypto = require("crypto");
 
 const { isAuthenticated, validateFields } = require("../middleware/auth.middleware");
 const { User } = require("../services/db");
-const { login, logout, signup, verifyAuthentication } = require("../controllers/auth.controller");
+const { login, logout, signup, verifyAuthentication, isUsernameValid } = require("../controllers/auth.controller");
 
 passport.use(new LocalStrategy(async function verify(username, password, cb) {
     const user = await User.findOne({ where: { username: username }});
@@ -61,5 +61,8 @@ router.post("/new", [
         .not().isEmpty().isLength({ min: 6, max: 16 }).matches(/^[-@.!\/#&+\w\s]*$/),
     validateFields,
 ], signup);
+
+// Is username valid?
+router.get("/verify/:username", isUsernameValid);
 
 module.exports = router;

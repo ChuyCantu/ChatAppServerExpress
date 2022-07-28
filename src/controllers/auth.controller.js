@@ -73,9 +73,31 @@ const verifyAuthentication = (req, res) => {
     }
 }
 
+const isUsernameValid = async (req, res) => {
+    const username = req.params.username;
+    const user = await User.findOne({ where: { username: username }});
+
+    if (!user) {
+        res.json({
+            ok: true,
+            msg: "Username valid"
+        });
+    }
+    else {
+        // res.status(409).json({
+        res.json({
+            ok: false,
+            msg: "Username taken"
+        });
+    }
+
+    
+}
+
 module.exports = {
     login,
     logout,
     signup,
-    verifyAuthentication
+    verifyAuthentication,
+    isUsernameValid
 };
