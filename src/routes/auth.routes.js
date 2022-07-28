@@ -4,7 +4,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const crypto = require("crypto");
 
-const { isAuthenticated, validateFields } = require("../middleware/auth.middleware");
+const { isAuthenticated, validateFields, validateConfirmPassword } = require("../middleware/auth.middleware");
 const { User } = require("../services/db");
 const { login, logout, signup, verifyAuthentication, isUsernameValid } = require("../controllers/auth.controller");
 
@@ -60,6 +60,7 @@ router.post("/new", [
     check("password", "The password must be 6 to 16 characters")
         .not().isEmpty().isLength({ min: 6, max: 16 }).matches(/^[-@.!\/#&+\w\s]*$/),
     validateFields,
+    validateConfirmPassword
 ], signup);
 
 // Is username valid?

@@ -11,7 +11,7 @@ const isAuthenticated = (req, res, next) => {
     }
 }
 
-const validateFields = (req, res = response, next) => {
+const validateFields = (req, res, next) => {
     const errors = validationResult(req);
 
     // Don't send values back
@@ -26,6 +26,7 @@ const validateFields = (req, res = response, next) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({
             ok: true,
+            msg: "Invalid fields",
             errors: errorsNoValues
         });
     }
@@ -33,7 +34,25 @@ const validateFields = (req, res = response, next) => {
     next(); // Everything went well, continue
 }
 
+const validateConfirmPassword = (req, res, next) => {
+    const password = req.body.password;
+    const confirm_password = req.body.confirm_password;
+
+    console.log(req.body)
+
+    if (password === confirm_password) {
+        next();
+    }
+    else {
+        return res.status(400).json({
+            ok: true,
+            msg: "Invalid fields",
+        });
+    }
+}
+
 module.exports = {
     isAuthenticated,
-    validateFields
+    validateFields,
+    validateConfirmPassword
 }
