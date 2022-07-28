@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 const { DataTypes } = require("sequelize");
-const userInit = require("../../db/models/user");
+const loadUserModel = require("../../db/models/user");
 
 // Service initialization
 const connectionString = process.env.DATABASE_URL;
@@ -16,7 +16,7 @@ const db  = new Sequelize(connectionString, {
         }
     });
 
-const User = userInit(db, DataTypes);
+const User = loadUserModel(db, DataTypes);
 
 async function testDatabaseConnection(db) {
     try {
