@@ -38,8 +38,6 @@ const validateConfirmPassword = (req, res, next) => {
     const password = req.body.password;
     const confirm_password = req.body.confirm_password;
 
-    console.log(req.body)
-
     if (password === confirm_password) {
         next();
     }

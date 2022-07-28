@@ -30,6 +30,16 @@ const logout = (req, res) => {
 };
 
 const signup = async (req, res) => {
+    const username = req.body.username;
+    const userMatch = await User.findOne({ with: { username } });
+
+    if (userMatch) {
+        return res.status(422).json({
+                ok: false,
+                msg: "The user already exist"
+            });
+    }
+
     const salt = crypto.randomBytes(16);
     crypto.pbkdf2(req.body.password, salt, 310000, 32, "sha256", (err, hashedPassword) => {
         if (err) return next(err);
@@ -43,7 +53,11 @@ const signup = async (req, res) => {
             user.save();
         }
         catch(err) {
-            return next(err);
+            // return next(err);
+            return res.status(500).json({
+                ok: false,
+                msg: "Error"
+            });
         }
 
         req.login(user, function(err) {
