@@ -5,6 +5,9 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+var passport = require('passport');
+const session = require("express-session");
+const SessionStore = require("express-session-sequelize")(session.Store);
 const { db, testDatabaseConnection } = require("./services/db");
 
 //+ Database connection
@@ -13,6 +16,8 @@ testDatabaseConnection(db);
 //+ Express Instance
 const app = express();
 
+app.locals.pluralize = require('pluralize');
+
 //+ Middleware
 app.use(logger("dev"));
 app.use(cors());
@@ -20,6 +25,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static("public"));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: new SessionStore({ db })
+}));
+app.use(passport.authenticate("session"));
 
 //+ Routes
 
