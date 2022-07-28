@@ -20,7 +20,7 @@ app.locals.pluralize = require('pluralize');
 
 //+ Middleware
 app.use(logger("dev"));
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:4200" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -39,7 +39,7 @@ app.use("/auth", require("./routes/auth.routes"));
 
 //+ Fallback
 app.get("*", (req, res) => {
-    res.send("Hello from server!");
+    res.status(404).json({ msg: "Hello from server!"});
     
     // //* When the frontend is up, send this instead:
     // res.sendFile(path.resolve(__dirname, "public/index.html"));
