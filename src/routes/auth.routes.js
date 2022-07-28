@@ -42,8 +42,8 @@ router.get("/", [isAuthenticated], verifyAuthentication);
 
 // Login
 router.post("/", [
-    check("username", "The username must be 3 or more characters")
-        .not().isEmpty().isLength({ min: 3 }),
+    check("username", "The username must be 3 or more alphanumeric characters (may include _)")
+        .not().isEmpty().isLength({ min: 3 }).matches(/^[\w]*$/),
     check("password", "The password must be 6 to 16 characters")
         .not().isEmpty().isLength({ min: 6, max: 16 }),
     validateFields,
@@ -55,8 +55,8 @@ router.delete("/", logout);
 
 // Signup
 router.post("/new", [
-    check("username", "The username must be 3 or more characters")
-        .not().isEmpty().isLength({ min: 3 }),
+    check("username", "The username must be 3 or more alphanumeric characters (may include _)")
+        .not().isEmpty().isLength({ min: 3 }).matches(/^[\w]*$/),
     check("password", "The password must be 6 to 16 characters")
         .not().isEmpty().isLength({ min: 6, max: 16 }).matches(/^[-@.!\/#&+\w\s]*$/),
     validateFields,
