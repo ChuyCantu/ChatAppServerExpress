@@ -90,8 +90,6 @@ const isUsernameValid = async (req, res) => {
             msg: "Username taken"
         });
     }
-
-    
 }
 
 module.exports = {
