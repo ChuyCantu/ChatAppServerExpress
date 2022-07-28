@@ -35,7 +35,7 @@ app.use(session({
 app.use(passport.authenticate("session"));
 
 //+ Routes
-
+app.use("/auth", require("./routes/auth.routes"));
 
 //+ Fallback
 app.get("*", (req, res) => {
