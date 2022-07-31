@@ -25,7 +25,7 @@ const setupChatEvents = (io = Server) => {
         socket.emit("welcome", "Welcome aboard");
 
         socket.on("disconnect", () => {
-            console.log("User disconnected");
+            console.log(`User ${socket.request.user.username} disconnected`);
         });
     });
 };

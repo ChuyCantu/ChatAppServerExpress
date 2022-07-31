@@ -31,7 +31,7 @@ const logout = (req, res) => {
 
 const signup = async (req, res) => {
     const username = req.body.username;
-    const userMatch = await User.findOne({ with: { username } });
+    const userMatch = await User.findOne({ where: { username: username } });
 
     if (userMatch) {
         return res.status(422).json({
