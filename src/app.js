@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 var passport = require('passport');
 const session = require("express-session");
+const bodyParser = require("body-parser");
 const SessionStore = require("express-session-sequelize")(session.Store);
 const { db, testDatabaseConnection } = require("./services/db");
 
@@ -23,16 +24,20 @@ app.use(logger("dev"));
 app.use(cors({ credentials: true, origin: "http://localhost:4200" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static("public"));
 
-app.use(session({
+const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: new SessionStore({ db })
-}));
-app.use(passport.authenticate("session"));
+});
+app.use(sessionMiddleware);
+app.use(passport.initialize());
+app.use(passport.session());
+// app.use(passport.authenticate("session"));
 
 //+ Routes
 app.use("/api/auth", require("./routes/auth.routes"));
@@ -45,4 +50,7 @@ app.get("*", (req, res) => {
     // res.sendFile(path.resolve(__dirname, "public/index.html"));
 });
 
-module.exports = app;
+module.exports = {
+  app,
+  sessionMiddleware
+};

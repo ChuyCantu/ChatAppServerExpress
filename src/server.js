@@ -1,8 +1,8 @@
-const app = require("./app");
+const { app, sessionMiddleware } = require("./app");
 const http = require("http");
 const socketIO = require("socket.io");
 
- const setupChatEvents = require("./chat/events");
+const { setupChatEvents, setupChatMiddleware } = require("./chat/events");
 
 // Store port in Express
 const port = process.env.PORT;
@@ -11,10 +11,11 @@ app.set("port", port);
 // Create HTTP Server
 const server = http.createServer(app);
 const io = new socketIO.Server(server, {
-    cors: { origin: "http://localhost:4200" }
+    cors: { credentials: true, origin: "http://localhost:4200" }
 });
 
 //+ Set socket io server events
+setupChatMiddleware(io, sessionMiddleware);
 setupChatEvents(io);
 
 server.listen(port, () => {
