@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const passport = require("passport");
 const { QueryTypes } = require("sequelize");
 const { db, User, FriendRelation, friendRelationStatus } = require("../services/db");
+const friendrelation = require("../../db/models/friendrelation");
 
 const setupChatMiddleware = (io = Server, sessionMiddleware) => {
     const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
@@ -113,12 +114,46 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
-        socket.on("accept-friend-request", async ({ requestId }) => {
-
+        socket.on("accept-friend-request", async (friendRequest) => {
+            const friendRelation = await FriendRelation.findOne({ where: { id: friendRequest.id } });
+            if (friendRelation) 
+                await friendRelation.update({ relation_status: friendRelationStatus.friends });
+            
+            socket.to(friendRequest.user.id).emit("friend-request-accepted", {
+                id: friendRequest.id,
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
+            });
         });
 
-        socket.on("reject-friend-request", async () => {
+        socket.on("reject-friend-request", async (friendRequest) => {
+            const friendRelation = await FriendRelation.findOne({ where: { id: friendRequest.id } });
+            if (friendRelation) 
+                friendRelation.destroy();
 
+            socket.to(friendRequest.user.id).emit("friend-request-rejected", {
+                id: friendRequest.id,
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
+            });
+        });
+
+        socket.on("cancel-pending-request", async (friendRequest) => {
+            const friendRelation = await FriendRelation.findOne({ where: { id: friendRequest.id } });
+            if (friendRelation) 
+                friendRelation.destroy();
+
+            socket.to(friendRequest.user.id).emit("friend-request-canceled", {
+                id: friendRequest.id,
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
+            });
         });
 
         //+ Load contacts and messages
