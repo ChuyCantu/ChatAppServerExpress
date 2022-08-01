@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const passport = require("passport");
 const { QueryTypes } = require("sequelize");
-const { db, User, FriendRelation, friendRelationStatus } = require("../services/db");
+const { db, User, FriendRelation, friendRelationStatus, Message } = require("../services/db");
 const friendrelation = require("../../db/models/friendrelation");
 
 const setupChatMiddleware = (io = Server, sessionMiddleware) => {
@@ -181,6 +181,21 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
+        socket.on("send-friend-message", async (messageReq) => {
+            const messageData = {
+                from: user.id,
+                to: messageReq.to,
+                content: messageReq.content
+            };
+
+            const messageInsert = await Message.create(messageData);
+
+            const message = { ...messageData, sentAt: messageInsert.sentAt };
+
+            socket.to(message.to).emit("new-friend-message", message);
+            socket.emit("new-friend-message", message);
+        });
+
         //+ Load contacts and messages
         const friendRelations = await db.query(
             `select fr.id, fr.user1_id, u1.username as username1, 
@@ -265,6 +280,9 @@ const setupChatEvents = (io = Server) => {
             pendingRequests,
             friendRequests
         });
+
+        // const lastFriendsMessage = await Message.findAll();
+        // socket.emit("last-friends-message-loaded", lastFriendsMessage);
     });
 };
 
