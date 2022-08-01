@@ -7,7 +7,10 @@ const login = (req, res) => {
         res.json({
             ok: true,
             msg: "Successful Login",
-            username: req.user.username
+            user: {
+                id: req.user.id,
+                username: req.user.username
+            }
         });
     }
     else {
@@ -65,7 +68,10 @@ const signup = async (req, res) => {
             res.json({
                 ok: true,
                 msg: "Successful signup",
-                username: user.username
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
             });
         });
     });
@@ -76,7 +82,10 @@ const verifyAuthentication = (req, res) => {
         res.json({
             ok: true,
             msg: "User authenticated",
-            username: req.user.username
+            user: {
+                id: req.user.id,
+                username: req.user.username
+            }
         });
     }
     else {
