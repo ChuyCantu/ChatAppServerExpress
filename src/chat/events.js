@@ -37,7 +37,7 @@ const setupChatEvents = (io = Server) => {
 
         socket.on("send-friend-request", async ({ to }) => {
             if (user.username === to) {
-                // TODO: Tell requester that user cannot friend himself
+                // TODO: Tell requester that user cannot friend himself (send-friend-request-reply)?
                 return;
             }
 
@@ -48,7 +48,7 @@ const setupChatEvents = (io = Server) => {
             });
 
             if (!receiver) {
-                // TODO: Tell requester that user does not exist
+                // TODO: Tell requester that user does not exist (send-friend-request-reply)?
                 return;
             }
 
@@ -71,7 +71,7 @@ const setupChatEvents = (io = Server) => {
             );
 
             if (friendRelation[0].length > 0) {
-                // TODO: Tell the requester that it's not possible to send request
+                // TODO: Tell the requester that it's not possible to send request (send-friend-request-reply)?
 
                 return;
             }
@@ -99,18 +99,29 @@ const setupChatEvents = (io = Server) => {
             catch (err) {
                 console.log("Error saving friend relation:", err);
 
-                // TODO: Tell the user something went wrong
+                // TODO: Tell the user something went wrong (send-friend-request-reply)?
                 return;
             }
 
             socket.to(receiver.id).emit("new-friend-request", { 
-                from: {
+                // from: {
+                id: friendRelationInsert.id,
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
+                // } 
+            });
+
+            socket.emit("send-friend-request-reply", {
+                requestSent: true,
+                friendRelation: {
                     id: friendRelationInsert.id,
                     user: {
                         id: user.id,
                         username: user.username
                     }
-                } 
+                }
             });
         });
 
@@ -149,6 +160,20 @@ const setupChatEvents = (io = Server) => {
 
             socket.to(friendRequest.user.id).emit("friend-request-canceled", {
                 id: friendRequest.id,
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
+            });
+        });
+
+        socket.on("delete-friend", async (friend) => {
+            const friendRelation = await FriendRelation.findOne({ where: { id: friend.id } });
+            if (friendRelation) 
+                friendRelation.destroy();
+
+            socket.to(friend.user.id).emit("friend-deleted", {
+                id: friend.id,
                 user: {
                     id: user.id,
                     username: user.username
@@ -235,7 +260,7 @@ const setupChatEvents = (io = Server) => {
             }
         }
         
-        socket.emit("load-friend-relations", {
+        socket.emit("friend-relations-loaded", {
             friends,
             pendingRequests,
             friendRequests
