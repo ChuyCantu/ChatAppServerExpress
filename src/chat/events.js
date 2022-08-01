@@ -92,16 +92,16 @@ const setupChatEvents = (io = Server) => {
                     relation_status: friendRelationStatus.pending_t_f
                 }
             }
-            const friendRelationInsert = await FriendRelation.build(friendRelationData);
-            try {
-                friendRelationInsert.save();
-            }
-            catch (err) {
-                console.log("Error saving friend relation:", err);
+            const friendRelationInsert = await FriendRelation.create(friendRelationData);
+            // try {
+            //     friendRelationInsert.save();
+            // }
+            // catch (err) {
+            //     console.log("Error saving friend relation:", err);
 
-                // TODO: Tell the user something went wrong (send-friend-request-reply)?
-                return;
-            }
+            //     // TODO: Tell the user something went wrong (send-friend-request-reply)?
+            //     return;
+            // }
 
             socket.to(receiver.id).emit("new-friend-request", { 
                 // from: {
