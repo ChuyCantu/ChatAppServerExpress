@@ -2,7 +2,6 @@ const { Server } = require("socket.io");
 const passport = require("passport");
 const { QueryTypes } = require("sequelize");
 const { db, User, FriendRelation, friendRelationStatus, Message } = require("../services/db");
-const friendrelation = require("../../db/models/friendrelation");
 
 const setupChatMiddleware = (io = Server, sessionMiddleware) => {
     const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
@@ -196,6 +195,20 @@ const setupChatEvents = (io = Server) => {
             socket.emit("new-friend-message", message);
         });
 
+        socket.on("request-friend-messages", async ({ friendId, offset, limit }) => {
+            const messages = await db.query(`
+                select m.id, m."from", m."to", m.content, m."sentAt"
+                from messages m where (m."from" = :user and m."to" = :friend) or
+                    (m."from" = :friend and m."to" = :user)
+                order by id desc offset :offset limit :limit
+            `, {
+                type: QueryTypes.SELECT,
+                replacements: { user: user.id, friend: friendId, offset: offset, limit: limit }
+            });
+            
+            socket.emit("friend-messages-received", messages);
+        });
+
         //+ Load contacts and messages
         const friendRelations = await db.query(
             `select fr.id, fr.user1_id, u1.username as username1, 
@@ -282,7 +295,7 @@ const setupChatEvents = (io = Server) => {
         });
 
         const lastFriendsMessage = await db.query(`
-            select m.from, m.to, m.content, m."sentAt"
+            select m.id, m.from, m.to, m.content, m."sentAt"
             from messages m left join messages m1 on 
                 ( (m.from = m1.from and m.to = m1.to) or (m.from = m1.to and m.to = m1.from) )
                 and case when m."sentAt" = m1."sentAt" then m.id < m1.id else m."sentAt" < m1."sentAt" end
