@@ -281,8 +281,18 @@ const setupChatEvents = (io = Server) => {
             friendRequests
         });
 
-        // const lastFriendsMessage = await Message.findAll();
-        // socket.emit("last-friends-message-loaded", lastFriendsMessage);
+        const lastFriendsMessage = await db.query(`
+            select m.from, m.to, m.content, m."sentAt"
+            from messages m left join messages m1 on 
+                ( (m.from = m1.from and m.to = m1.to) or (m.from = m1.to and m.to = m1.from) )
+                and case when m."sentAt" = m1."sentAt" then m.id < m1.id else m."sentAt" < m1."sentAt" end
+            where m1.id is null
+            and :user in (m.from, m.to)
+        `, {  
+            type: QueryTypes.SELECT ,
+            replacements: { user: user.id }
+        });
+        socket.emit("last-friends-message-loaded", lastFriendsMessage);
     });
 };
 
