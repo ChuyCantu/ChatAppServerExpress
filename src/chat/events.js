@@ -34,9 +34,9 @@ const setupChatEvents = (io = Server) => {
             console.log(`\nUser ${socket.request.user.username} disconnected\n`);
         });
 
-        socket.on("send-friend-request", async ({ to }) => {
+        socket.on("send_friend_request", async ({ to }) => {
             if (user.username === to) {
-                // TODO: Tell requester that user cannot friend himself (send-friend-request-reply)?
+                // TODO: Tell requester that user cannot friend himself (send_friend_request_reply)?
                 return;
             }
 
@@ -47,7 +47,7 @@ const setupChatEvents = (io = Server) => {
             });
 
             if (!receiver) {
-                // TODO: Tell requester that user does not exist (send-friend-request-reply)?
+                // TODO: Tell requester that user does not exist (send_friend_request_reply)?
                 return;
             }
 
@@ -70,7 +70,7 @@ const setupChatEvents = (io = Server) => {
             );
 
             if (friendRelation[0].length > 0) {
-                // TODO: Tell the requester that it's not possible to send request (send-friend-request-reply)?
+                // TODO: Tell the requester that it's not possible to send request (send_friend_request_reply)?
 
                 return;
             }
@@ -98,11 +98,11 @@ const setupChatEvents = (io = Server) => {
             // catch (err) {
             //     console.log("Error saving friend relation:", err);
 
-            //     // TODO: Tell the user something went wrong (send-friend-request-reply)?
+            //     // TODO: Tell the user something went wrong (send_friend_request_reply)?
             //     return;
             // }
 
-            socket.to(receiver.id).emit("new-friend-request", { 
+            socket.to(receiver.id).emit("new_friend_request", { 
                 // from: {
                 id: friendRelationInsert.id,
                 user: {
@@ -112,7 +112,7 @@ const setupChatEvents = (io = Server) => {
                 // } 
             });
 
-            socket.emit("send-friend-request-reply", {
+            socket.emit("send_friend_request_reply", {
                 requestSent: true,
                 friendRelation: {
                     id: friendRelationInsert.id,
@@ -124,12 +124,12 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
-        socket.on("accept-friend-request", async (friendRequest) => {
+        socket.on("accept_friend_request", async (friendRequest) => {
             const friendRelation = await FriendRelation.findOne({ where: { id: friendRequest.id } });
             if (friendRelation) 
                 await friendRelation.update({ relation_status: friendRelationStatus.friends });
             
-            socket.to(friendRequest.user.id).emit("friend-request-accepted", {
+            socket.to(friendRequest.user.id).emit("friend_request_accepted", {
                 id: friendRequest.id,
                 user: {
                     id: user.id,
@@ -138,12 +138,12 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
-        socket.on("reject-friend-request", async (friendRequest) => {
+        socket.on("reject_friend_request", async (friendRequest) => {
             const friendRelation = await FriendRelation.findOne({ where: { id: friendRequest.id } });
             if (friendRelation) 
                 friendRelation.destroy();
 
-            socket.to(friendRequest.user.id).emit("friend-request-rejected", {
+            socket.to(friendRequest.user.id).emit("friend_request_rejected", {
                 id: friendRequest.id,
                 user: {
                     id: user.id,
@@ -152,12 +152,12 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
-        socket.on("cancel-pending-request", async (friendRequest) => {
+        socket.on("cancel_pending_request", async (friendRequest) => {
             const friendRelation = await FriendRelation.findOne({ where: { id: friendRequest.id } });
             if (friendRelation) 
                 friendRelation.destroy();
 
-            socket.to(friendRequest.user.id).emit("friend-request-canceled", {
+            socket.to(friendRequest.user.id).emit("friend_request_canceled", {
                 id: friendRequest.id,
                 user: {
                     id: user.id,
@@ -166,12 +166,12 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
-        socket.on("delete-friend", async (friend) => {
+        socket.on("delete_friend", async (friend) => {
             const friendRelation = await FriendRelation.findOne({ where: { id: friend.id } });
             if (friendRelation) 
                 friendRelation.destroy();
 
-            socket.to(friend.user.id).emit("friend-deleted", {
+            socket.to(friend.user.id).emit("friend_deleted", {
                 id: friend.id,
                 user: {
                     id: user.id,
@@ -180,7 +180,7 @@ const setupChatEvents = (io = Server) => {
             });
         });
 
-        socket.on("send-friend-message", async (messageReq) => {
+        socket.on("send_friend_message", async (messageReq) => {
             const messageData = {
                 from: user.id,
                 to: messageReq.to,
@@ -191,11 +191,11 @@ const setupChatEvents = (io = Server) => {
 
             const message = { ...messageData, sentAt: messageInsert.sentAt };
 
-            socket.to(message.to).emit("new-friend-message", message);
-            socket.emit("new-friend-message", message);
+            socket.to(message.to).emit("new_friend_message", message);
+            socket.emit("new_friend_message", message);
         });
 
-        socket.on("request-friend-messages", async ({ friendId, offset, limit }) => {
+        socket.on("request_friend_messages", async ({ friendId, offset, limit }) => {
             const messages = await db.query(`
                 select m.id, m."from", m."to", m.content, m."sentAt"
                 from messages m where (m."from" = :user and m."to" = :friend) or
@@ -206,7 +206,7 @@ const setupChatEvents = (io = Server) => {
                 replacements: { user: user.id, friend: friendId, offset: offset, limit: limit }
             });
             
-            socket.emit("friend-messages-received", messages);
+            socket.emit("friend_messages_received", messages);
         });
 
         //+ Load contacts and messages
@@ -288,7 +288,7 @@ const setupChatEvents = (io = Server) => {
             }
         }
         
-        socket.emit("friend-relations-loaded", {
+        socket.emit("friend_relations_loaded", {
             friends,
             pendingRequests,
             friendRequests
@@ -305,7 +305,7 @@ const setupChatEvents = (io = Server) => {
             type: QueryTypes.SELECT ,
             replacements: { user: user.id }
         });
-        socket.emit("last-friends-message-loaded", lastFriendsMessage);
+        socket.emit("last_friends_message_loaded", lastFriendsMessage);
     });
 };
 
