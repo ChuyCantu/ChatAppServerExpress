@@ -209,6 +209,10 @@ const setupChatEvents = (io = Server) => {
             socket.emit("friend_messages_received", friendId, messages);
         });
 
+        socket.on("notify_typing", async (to, typing) => {
+            socket.to(to).emit("friend_typing", user.id, typing);
+        })
+
         //+ Load contacts and messages
         const friendRelations = await db.query(
             `select fr.id, fr.user1_id, u1.username as username1, 
