@@ -206,7 +206,7 @@ const setupChatEvents = (io = Server) => {
                 replacements: { user: user.id, friend: friendId, offset: offset, limit: limit }
             });
             
-            socket.emit("friend_messages_received", messages);
+            socket.emit("friend_messages_received", friendId, messages);
         });
 
         //+ Load contacts and messages
