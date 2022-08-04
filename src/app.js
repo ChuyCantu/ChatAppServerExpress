@@ -21,7 +21,7 @@ app.locals.pluralize = require('pluralize');
 
 //+ Middleware
 app.use(logger("dev"));
-app.use(cors({ credentials: true, origin: "http://localhost:4000" }));
+app.use(cors({ credentials: true, origin: "https://nd-chatapp.herokuapp.com" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));

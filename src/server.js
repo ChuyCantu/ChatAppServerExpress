@@ -11,7 +11,7 @@ app.set("port", port);
 // Create HTTP Server
 const server = http.createServer(app);
 const io = new socketIO.Server(server, {
-    cors: { credentials: true, origin: "http://localhost:4000" }
+    cors: { credentials: true, origin: "https://nd-chatapp.herokuapp.com" }
 });
 
 //+ Set socket io server events
