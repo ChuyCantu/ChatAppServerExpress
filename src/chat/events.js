@@ -180,7 +180,41 @@ const setupChatEvents = (io = Server) => {
                 }
             });
 
-            // TODO: Also delete messages
+            // Also delete messages
+            await db.query(`
+                delete from messages 
+                where ("from" = :user and "to" = :friend) or
+                    ("from" = :friend and "to" = :user)
+            `, {
+                replacements: { user: user.id, friend: friend.user.id }
+            });
+        });
+
+        socket.on("delete_account", async () => {
+            const toDeleteUser = await User.findOne({ where: { id: user.id } });
+
+            if (!toDeleteUser) return;
+
+            // Delete friend relations
+            await db.query(`
+                delete from friend_relations 
+                where user1_id = :user or user2_id = :user
+            `, {
+                replacements: { user: user.id }
+            });
+
+            // And messages
+            await db.query(`
+                delete from messages 
+                where "from" = :user or "to" = :user
+            `, {
+                replacements: { user: user.id }
+            });
+
+            // And finally the user
+            toDeleteUser.destroy();
+
+            socket.disconnect();
         });
 
         socket.on("send_friend_message", async (messageReq) => {
