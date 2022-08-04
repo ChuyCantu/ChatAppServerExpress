@@ -1,6 +1,6 @@
 const { Server } = require("socket.io");
 const passport = require("passport");
-const { QueryTypes } = require("sequelize");
+const { QueryTypes, Op } = require("sequelize");
 const { db, User, FriendRelation, friendRelationStatus, Message } = require("../services/db");
 
 const setupChatMiddleware = (io = Server, sessionMiddleware) => {
@@ -197,7 +197,7 @@ const setupChatEvents = (io = Server) => {
 
         socket.on("request_friend_messages", async ({ friendId, offset, limit }) => {
             const messages = await db.query(`
-                select id, "from", "to", content, "sentAt"
+                select id, "from", "to", content, "sentAt", "readAt"
                 from messages where ("from" = :user and "to" = :friend) or
                     ("from" = :friend and "to" = :user)
                 order by id desc offset :offset limit :limit
@@ -299,7 +299,7 @@ const setupChatEvents = (io = Server) => {
         });
 
         const lastFriendsMessage = await db.query(`
-            select m.id, m.from, m.to, m.content, m."sentAt"
+            select m.id, m.from, m.to, m.content, m."sentAt", m."readAt"
             from messages m left join messages m1 on 
                 ( (m.from = m1.from and m.to = m1.to) or (m.from = m1.to and m.to = m1.from) )
                 and case when m."sentAt" = m1."sentAt" then m.id < m1.id else m."sentAt" < m1."sentAt" end
@@ -309,7 +309,26 @@ const setupChatEvents = (io = Server) => {
             type: QueryTypes.SELECT ,
             replacements: { user: user.id }
         });
-        socket.emit("last_friends_message_loaded", lastFriendsMessage);
+        // const unreadMessages = await db.query(`
+        //     select count(id), "from", "to"
+	    //     from messages
+        //     where "from" = :user or "to" = :user
+        //     group by "from", "to"
+        // `, {  
+        //     type: QueryTypes.SELECT ,
+        //     replacements: { user: user.id }
+        // });
+        const unreadMessages = await Message.count({
+            attributes: [ "from", "to" ],
+            where: {
+                [Op.or]: [
+                    { from: user.id },
+                    { to: user.id }
+                ]
+            },
+            group: [ "from", "to" ]
+        })
+        socket.emit("last_friends_message_loaded", lastFriendsMessage, unreadMessages);
     });
 };
 
