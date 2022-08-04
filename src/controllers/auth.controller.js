@@ -44,16 +44,27 @@ const signup = async (req, res) => {
     }
 
     const salt = crypto.randomBytes(16);
-    crypto.pbkdf2(req.body.password, salt, 310000, 32, "sha256", (err, hashedPassword) => {
+    crypto.pbkdf2(req.body.password, salt, 310000, 32, "sha256", async (err, hashedPassword) => {
         if (err) return next(err);
 
-        const user = User.build({ 
-            username: req.body.username,
-            hashed_password: hashedPassword,
-            salt
-        });
         try {
-            user.save();
+            const user = await User.create({ 
+                username: req.body.username,
+                hashed_password: hashedPassword,
+                salt
+            });
+
+            req.login(user, function(err) {
+                if (err) return next(err);
+                res.json({
+                    ok: true,
+                    msg: "Successful signup",
+                    user: {
+                        id: user.id,
+                        username: user.username
+                    }
+                });
+            });
         }
         catch(err) {
             // return next(err);
@@ -62,18 +73,6 @@ const signup = async (req, res) => {
                 msg: "Error"
             });
         }
-
-        req.login(user, function(err) {
-            if (err) return next(err);
-            res.json({
-                ok: true,
-                msg: "Successful signup",
-                user: {
-                    id: user.id,
-                    username: user.username
-                }
-            });
-        });
     });
 };
 
