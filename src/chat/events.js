@@ -112,13 +112,14 @@ const setupChatEvents = (io = Server) => {
                 // } 
             });
 
-            socket.emit("send_friend_request_reply", {
+            // socket
+            io.to(user.id).emit("send_friend_request_reply", {
                 requestSent: true,
                 friendRelation: {
                     id: friendRelationInsert.id,
                     user: {
-                        id: user.id,
-                        username: user.username
+                        id: receiver.id,
+                        username: to
                     }
                 }
             });
@@ -178,6 +179,8 @@ const setupChatEvents = (io = Server) => {
                     username: user.username
                 }
             });
+
+            // TODO: Also delete messages
         });
 
         socket.on("send_friend_message", async (messageReq) => {
@@ -192,7 +195,8 @@ const setupChatEvents = (io = Server) => {
             const message = { id: messageInsert.id, sentAt: messageInsert.sentAt, ...messageData };
 
             socket.to(message.to).emit("new_friend_message", message);
-            socket.emit("new_friend_message", message);
+            // socket.emit("new_friend_message", message);
+            io.to(user.id).emit("new_friend_message", message); // Also notify myself and other instances of myself
         });
 
         socket.on("request_friend_messages", async ({ friendId, offset, limit }) => {
