@@ -218,6 +218,19 @@ const setupChatEvents = (io = Server) => {
         });
 
         socket.on("send_friend_message", async (messageReq) => {
+            const friendRelation = await FriendRelation.findOne({
+                where: {
+                    [Op.or]: [
+                        { [Op.and]: [  { user1_id: user.id }, { user2_id: messageReq.to } ] },
+                        { [Op.and]: [  { user1_id: messageReq.to }, { user2_id: user.id } ] }
+                    ]
+                }
+            });
+            if (!friendRelation) {
+                // TODO: Return error
+                return;
+            }
+
             const messageData = {
                 from: user.id,
                 to: messageReq.to,
@@ -251,22 +264,6 @@ const setupChatEvents = (io = Server) => {
             socket.to(to).emit("friend_typing", user.id, typing);
         });
 
-        // socket.on("notify_messages_read", async (friendId, fromMsgId, toMsgId, timestamp) => {
-        //     console.log(friendId, fromMsgId, toMsgId, timestamp);
-
-        //     await db.query(`
-        //         update messages set "readAt" = :datetime
-        //         where "from" = :friend and "to" = :user
-        //         and id >= :from and id <= :to
-        //     `,{
-        //         replacements: { datetime: timestamp, from: fromMsgId, 
-        //             to: toMsgId, user: user.id, friend: friendId 
-        //         }
-        //     });
-
-        //     // Also update the friend's messages to be read
-        //     socket.to(friendId).emit("messages_read", user.id, fromMsgId, toMsgId, timestamp);
-        // });
         socket.on("notify_message_read", async (friendId, msgReadId, timestamp) => {
             await db.query(`
                 update messages set "readAt" = :datetime
