@@ -189,7 +189,7 @@ const setupChatEvents = (io = Server) => {
 
             const messageInsert = await Message.create(messageData);
 
-            const message = { ...messageData, sentAt: messageInsert.sentAt };
+            const message = { id: messageInsert.id, sentAt: messageInsert.sentAt, ...messageData };
 
             socket.to(message.to).emit("new_friend_message", message);
             socket.emit("new_friend_message", message);
@@ -211,7 +211,56 @@ const setupChatEvents = (io = Server) => {
 
         socket.on("notify_typing", async (to, typing) => {
             socket.to(to).emit("friend_typing", user.id, typing);
-        })
+        });
+
+        // socket.on("notify_messages_read", async (friendId, fromMsgId, toMsgId, timestamp) => {
+        //     console.log(friendId, fromMsgId, toMsgId, timestamp);
+
+        //     await db.query(`
+        //         update messages set "readAt" = :datetime
+        //         where "from" = :friend and "to" = :user
+        //         and id >= :from and id <= :to
+        //     `,{
+        //         replacements: { datetime: timestamp, from: fromMsgId, 
+        //             to: toMsgId, user: user.id, friend: friendId 
+        //         }
+        //     });
+
+        //     // Also update the friend's messages to be read
+        //     socket.to(friendId).emit("messages_read", user.id, fromMsgId, toMsgId, timestamp);
+        // });
+        socket.on("notify_message_read", async (friendId, msgReadId, timestamp) => {
+            await db.query(`
+                update messages set "readAt" = :datetime
+                where id = :msgId
+            `,{
+                replacements: { 
+                    datetime: timestamp, msgId: msgReadId 
+                }
+            });
+
+            // Also update the friend's messages to be read
+            socket.to(friendId).emit("message_read", user.id, msgReadId, timestamp);
+        });
+
+        socket.on("notify_messages_read", async (friendId, lastMsgReadId, timestamp) => {
+            console.log(friendId, lastMsgReadId, timestamp);
+
+            await db.query(`
+                update messages set "readAt" = :datetime
+                where "readAt" is null 
+                and "from" = :friend and "to" = :user
+                and id <= :lastId
+            `,{
+                replacements: { 
+                    datetime: timestamp, lastId: lastMsgReadId, 
+                    user: user.id, friend: friendId 
+                }
+            });
+
+            // Also update the friend's messages to be read
+            socket.to(friendId).emit("messages_read", user.id, lastMsgReadId, timestamp);
+        });
 
         //+ Load contacts and messages
         const friendRelations = await db.query(
@@ -312,11 +361,11 @@ const setupChatEvents = (io = Server) => {
         const unreadMessages = await Message.count({
             attributes: [ "from" ],
             where: {
-                to: user.id
+                to: user.id,
+                readAt: null
             },
             group: [ "from", "to" ]
         });
-        console.log(unreadMessages)
         socket.emit("last_friends_message_loaded", lastFriendsMessage, unreadMessages);
     });
 };
