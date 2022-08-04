@@ -25,8 +25,11 @@ const db  = new Sequelize(connectionString, {
             acquire: 20000,
             idle: 5000
         },
-        ssl: {
-            rejectUnauthorized: false
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false
+            }
         }
     });
 
