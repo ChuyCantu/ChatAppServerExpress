@@ -23,10 +23,10 @@ const db  = new Sequelize(connectionString, {
             max: 10,
             min: 0,
             acquire: 20000,
-            idle: 5000,
-            ssl: {
-                rejectUnauthorized: false
-            }
+            idle: 5000
+        },
+        ssl: {
+            rejectUnauthorized: false
         }
     });
 
