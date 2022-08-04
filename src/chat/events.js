@@ -197,9 +197,9 @@ const setupChatEvents = (io = Server) => {
 
         socket.on("request_friend_messages", async ({ friendId, offset, limit }) => {
             const messages = await db.query(`
-                select m.id, m."from", m."to", m.content, m."sentAt"
-                from messages m where (m."from" = :user and m."to" = :friend) or
-                    (m."from" = :friend and m."to" = :user)
+                select id, "from", "to", content, "sentAt"
+                from messages where ("from" = :user and "to" = :friend) or
+                    ("from" = :friend and "to" = :user)
                 order by id desc offset :offset limit :limit
             `, {
                 type: QueryTypes.SELECT,
