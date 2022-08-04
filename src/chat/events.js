@@ -309,25 +309,14 @@ const setupChatEvents = (io = Server) => {
             type: QueryTypes.SELECT ,
             replacements: { user: user.id }
         });
-        // const unreadMessages = await db.query(`
-        //     select count(id), "from", "to"
-	    //     from messages
-        //     where "from" = :user or "to" = :user
-        //     group by "from", "to"
-        // `, {  
-        //     type: QueryTypes.SELECT ,
-        //     replacements: { user: user.id }
-        // });
         const unreadMessages = await Message.count({
-            attributes: [ "from", "to" ],
+            attributes: [ "from" ],
             where: {
-                [Op.or]: [
-                    { from: user.id },
-                    { to: user.id }
-                ]
+                to: user.id
             },
             group: [ "from", "to" ]
-        })
+        });
+        console.log(unreadMessages)
         socket.emit("last_friends_message_loaded", lastFriendsMessage, unreadMessages);
     });
 };
