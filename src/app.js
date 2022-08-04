@@ -21,12 +21,12 @@ app.locals.pluralize = require('pluralize');
 
 //+ Middleware
 app.use(logger("dev"));
-app.use(cors({ credentials: true, origin: "http://localhost:4200" }));
+app.use(cors({ credentials: true, origin: "http://localhost:4000" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.static("public"));
+app.use(express.static("public"));
 
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET,
@@ -43,11 +43,8 @@ app.use(passport.session());
 app.use("/api/auth", require("./routes/auth.routes"));
 
 //+ Fallback
-app.get("*", (req, res) => {
-    res.status(404).json({ msg: "Hello from server!"});
-    
-    // //* When the frontend is up, send this instead:
-    // res.sendFile(path.resolve(__dirname, "public/index.html"));
+app.get("*", (req, res) => {    
+    res.sendFile(path.resolve(__dirname, "../public/index.html"));
 });
 
 module.exports = {
