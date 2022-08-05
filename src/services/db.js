@@ -45,7 +45,6 @@ if (env !== "development") {
         }
     };
 }
-console.log(config)
 
 const db  = new Sequelize(connectionString, config);
 
