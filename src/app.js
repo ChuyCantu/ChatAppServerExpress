@@ -10,6 +10,7 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const SessionStore = require("express-session-sequelize")(session.Store);
 const { db, testDatabaseConnection } = require("./services/db");
+const env = process.env.NODE_ENV || "development";
 
 //+ Database connection
 testDatabaseConnection(db);
@@ -21,7 +22,10 @@ app.locals.pluralize = require('pluralize');
 
 //+ Middleware
 app.use(logger("dev"));
-app.use(cors({ credentials: true, origin: "https://nd-chatapp.herokuapp.com" }));
+app.use(cors({ 
+  credentials: true, 
+  origin: env === "development" ? "http://localhost:4200" : "https://nd-chatapp.herokuapp.com" 
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));

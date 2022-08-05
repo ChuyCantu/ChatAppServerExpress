@@ -3,6 +3,7 @@ const { DataTypes } = require("sequelize");
 const loadUserModel = require("../../db/models/user");
 const loadFriendRelationModel = require("../../db/models/friendrelation");
 const loadMessageModel = require("../../db/models/message");
+const env = process.env.NODE_ENV || "development";
 
 async function testDatabaseConnection(db) {
     try {
@@ -16,7 +17,18 @@ async function testDatabaseConnection(db) {
 // Service initialization
 const connectionString = process.env.DATABASE_URL;
 const dialect = process.env.DB_DIALECT;
-const db  = new Sequelize(connectionString, {
+let config = {
+    dialect,
+    repositoryMode: true,
+    pool: {
+        max: 10,
+        min: 0,
+        acquire: 20000,
+        idle: 5000
+    }
+};
+if (env !== "development") {
+    config = {
         dialect,
         repositoryMode: true,
         pool: {
@@ -31,7 +43,11 @@ const db  = new Sequelize(connectionString, {
                 rejectUnauthorized: false
             }
         }
-    });
+    };
+}
+console.log(config)
+
+const db  = new Sequelize(connectionString, config);
 
 //* Model Initialization
 const User = loadUserModel(db, DataTypes);
